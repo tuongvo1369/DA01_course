@@ -32,3 +32,47 @@ FROM posts
 WHERE DATE_PART('year', post_date::DATE) = 2021 
 GROUP BY user_id
 HAVING COUNT(post_id)> 1
+---7)Your team at JPMorgan Chase is preparing to launch a new credit card, and to gain some insights, you're analyzing how many credit cards were issued each month.
+Write a query that outputs the name of each credit card and the difference in the number of issued cards between the month with the highest issuance cards and the lowest issuance. Arrange the results based on the largest disparity.
+SELECT 
+card_name,
+MAX(issued_amount)-MIN(issued_amount) as disparity
+FROM monthly_cards_issued
+GROUP BY card_name
+ORDER BY disparity
+---8)CVS Health is analyzing its pharmacy sales data, and how well different products are selling in the market. Each drug is exclusively manufactured by a single manufacturer.
+Write a query to identify the manufacturers associated with the drugs that resulted in losses for CVS Health and calculate the total amount of losses incurred.
+Output the manufacturer's name, the number of drugs associated with losses, and the total losses in absolute value. Display the results sorted in descending order with the highest losses displayed at the top.
+SELECT
+  manufacturer,
+  COUNT(drug),
+  ABS(SUM(total_sales - cogs)) as profit_margin
+FROM pharmacy_sales
+WHERE total_sales - cogs <= 0
+GROUP BY manufacturer
+ORDER BY profit_margin DESC
+---9)Write a solution to report the movies with an odd-numbered ID and a description that is not "boring".
+Return the result table ordered by rating in descending order.
+select *
+from Cinema
+WHERE CEILING(id/2) <> FLOOR(id/2)
+AND description =! 'boring'
+ORDER BY rating DESC
+---10)Write a solution to calculate the number of unique subjects each teacher teaches in the university. Return the result table in any order.
+SELECT
+teacher_id,
+COUNT(DISTINCT subject_id) AS count
+FROM Teacher
+GROUP BY teacher_id
+---11)Write a solution that will, for each user, return the number of followers. Return the result table ordered by user_id in ascending order.
+SELECT
+    user_id,
+    COUNT(DISTINCT follower_id) AS followers_count
+FROM Followers
+GROUP BY user_id
+ORDER BY user_id
+---12)Write a solution to find all the classes that have at least five students. Return the result table in any order.
+SELECT class
+FROM Courses
+GROUP BY class
+HAVING COUNT(DISTINCT student) >4
