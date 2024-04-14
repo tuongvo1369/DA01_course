@@ -14,4 +14,21 @@ FROM EMPLOYEES
 SELECT
 SUM(item_count*order_occurrences)/SUM(order_occurrences) AS mean
 FROM items_per_order
----5)
+---5)Given a table of candidates and their skills, you're tasked with finding the candidates best suited for an open Data Science job. You want to find candidates who are proficient in Python, Tableau, and PostgreSQL.
+Write a query to list the candidates who possess all of the required skills for the job. Sort the output by candidate ID in ascending order.
+SELECT 
+candidate_id,
+COUNT(skill) AS skill_count
+FROM candidates
+WHERE skill IN ('Python', 'Tableau', 'PostgreSQL')
+GROUP BY candidate_id
+HAVING COUNT(skill) = 3
+ORDER BY candidate_id
+---6)Given a table of Facebook posts, for each user who posted at least twice in 2021, write a query to find the number of days between each user’s first post of the year and last post of the year in the year 2021. Output the user and number of the days between each user's first and last post.
+SELECT user_id,
+COUNT(post_id),
+MAX(DATE(post_date))-MIN(DATE(post_date))+1 AS interval
+FROM posts
+WHERE DATE_PART('year', post_date::DATE) = 2021 
+GROUP BY user_id
+HAVING COUNT(post_id)> 1
