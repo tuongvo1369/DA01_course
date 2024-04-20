@@ -12,7 +12,7 @@ SELECT Ceiling(AVG(Salary)-AVG(REPLACE(Salary, 0, ""))) AS error
 FROM EMPLOYEES
 ---4) You're trying to find the mean number of items per order on Alibaba, rounded to 1 decimal place using tables which includes information on the count of items in each order (item_count table) and the corresponding number of orders for each item count (order_occurrences table).
 SELECT
-SUM(item_count*order_occurrences)/SUM(order_occurrences) AS mean
+ROUND(CAST(SUM(item_count*order_occurrences)/SUM(order_occurrences) AS DECIMAL),1) AS mean
 FROM items_per_order
 ---5)Given a table of candidates and their skills, you're tasked with finding the candidates best suited for an open Data Science job. You want to find candidates who are proficient in Python, Tableau, and PostgreSQL.
 Write a query to list the candidates who possess all of the required skills for the job. Sort the output by candidate ID in ascending order.
