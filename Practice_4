@@ -1,0 +1,54 @@
+1--/*Assume you're given the table on user viewership categorised by device type where the three types are laptop, tablet, and phone.
+Write a query that calculates the total viewership for laptops and mobile devices where mobile is defined as the sum of tablet and phone viewership. Output the total viewership for laptops as laptop_reviews and the total viewership for mobile devices as mobile_views.*/
+SELECT
+SUM(CASE
+  WHEN device_type IN ('tablet', 'phone') THEN 1
+  ELSE 0
+  END) AS mobile_view,
+SUM(CASE
+  WHEN device_type = 'laptop' THEN 1
+  ELSE 0
+  END) AS laptop_view
+FROM viewership
+2--/*Report for every three line segments whether they can form a triangle. Return the result table in any order.*/
+SELECT *,
+CASE
+    WHEN (x+y> z AND x+z >y AND y+z > x) THEN 'Yes'
+    ELSE 'No'
+END AS triangle
+FROM Triangle
+3--/*UnitedHealth Group has a program called Advocate4Me, which allows members to call an advocate and receive support for their health care needs – whether that's behavioural, clinical, well-being, health care financing, benefits, claims or pharmacy help.
+Calls to the Advocate4Me call centre are categorised, but sometimes they can't fit neatly into a category. These uncategorised calls are labelled “n/a”, or are just empty (when a support agent enters nothing into the category field).
+Write a query to find the percentage of calls that cannot be categorised. Round your answer to 1 decimal place.*/
+SELECT
+100.0*COUNT(case_id) FILTER (
+  WHERE call_category ='n/a' OR call_category IS NULL)
+/COUNT(case_id) AS pct
+FROM callers
+4--/*Find the names of the customer that are not referred by the customer with id = 2.
+Return the result table in any order.
+SELECT name
+FROM Customer
+WHERE COALESCE(referee_id,0) <> 2
+5--/*Make a report showing the number of survivors and non-survivors by passenger class.
+Classes are categorized based on the pclass value as:
+pclass = 1: first_class
+pclass = 2: second_classs
+pclass = 3: third_class
+Output the number of survivors and non-survivors by each class.*/
+select
+survived,
+SUM(CASE
+    WHEN pclass = 1 THEN 1 
+    ELSE 0
+    END) AS first_class,
+SUM(CASE
+    WHEN pclass = 2 THEN 1 
+    ELSE 0
+    END) AS second_class,
+SUM(CASE
+    WHEN pclass = 3 THEN 1 
+    ELSE 0
+    END) AS third_class
+FROM titanic
+GROUP BY survived
