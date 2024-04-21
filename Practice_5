@@ -1,1 +1,32 @@
+/*1--Given the CITY and COUNTRY tables, query the names of all the continents (COUNTRY.Continent) and their respective average city populations (CITY.Population) rounded down to the nearest integer.
+Note: CITY.CountryCode and COUNTRY.Code are matching key columns.*/
+SELECT 
+    COUNTRY.CONTINENT,
+    FLOOR(AVG(CITY.POPULATION)) AS avg_pop
+FROM COUNTRY
+JOIN CITY
+ON COUNTRY.CODE =CITY.COUNTRYCODE
+GROUP BY COUNTRY.CONTINENT
+/*2--New TikTok users sign up with their emails. They confirmed their signup by replying to the text confirmation to activate their accounts. Users may receive multiple text messages for account confirmation until they have confirmed their new account.
+A senior analyst is interested to know the activation rate of specified users in the emails table. Write a query to find the activation rate. Round the percentage to 2 decimal places.
+Definitions:
+emails table contain the information of user signup details.
+texts table contains the users' activation information.
+Assumptions:
+The analyst is interested in the activation rate of specific users in the emails table, which may not include all users that could potentially be found in the texts table.
+For example, user 123 in the emails table may not be in the texts table and vice versa.*/
+SELECT
+CONCAT(100*ROUND(COUNT(texts.email_id)
+/ COUNT(DISTINCT emails.email_id),2),'%') AS activation_rate
+FROM emails
+LEFT JOIN texts
+ON emails.email_id=texts.email_id
+AND texts.signup_action = 'Confirmed'
+/*3--Assume you're given tables with information on Snapchat users, including their ages and time spent sending and opening snaps.
+Write a query to obtain a breakdown of the time spent sending vs. opening snaps as a percentage of total time spent on these activities grouped by age group. Round the percentage to 2 decimal places in the output.
+Notes:
+Calculate the following percentages:
+time spent sending / (Time spent sending + Time spent opening)
+Time spent opening / (Time spent sending + Time spent opening)
+To avoid integer division in percentages, multiply by 100.0 and not 100.*/
 
