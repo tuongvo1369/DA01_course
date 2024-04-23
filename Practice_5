@@ -51,3 +51,32 @@ HAVING COUNT(DISTINCT b.product_category)=3
 /*5--For this problem, we will consider a manager an employee who has at least 1 other employee reporting to them.
 Write a solution to report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.
 Return the result table ordered by employee_id*/
+SELECT 
+    emp1.employee_id, emp1.name,
+    COUNT(DISTINCT emp2.employee_id) AS employee_count,
+    ROUND(AVG(emp2.age)) AS avg_age
+FROM employees as emp1
+JOIN employees as emp2
+    ON emp2.reports_to = emp1. employee_id
+GROUP BY emp1.employee_id
+/*6--Write a solution to get the names of products that have at least 100 units ordered in February 2020 and their amount.
+Return the result table in any order.*/
+SELECT
+a.product_name,
+SUM(b.unit) AS unit
+FROM Products AS a
+JOIN Orders AS b ON a.product_id = b.product_id
+WHERE (EXTRACT(month FROM b.order_date) = 2
+AND EXTRACT(year FROM b.order_date) = 2020)
+GROUP BY a.product_name
+HAVING SUM(b.unit) >=100
+/*7--Assume you're given two tables containing data about Facebook Pages and their respective likes (as in "Like a Facebook Page").
+Write a query to return the IDs of the Facebook pages that have zero likes. The output should be sorted in ascending order based on the page IDs.*/
+SELECT
+a.page_id,
+COUNT(b.user_id) AS likes_count
+FROM pages AS a 
+LEFT JOIN page_likes AS b
+ON a.page_id = b.page_id
+GROUP BY a.page_id
+HAVING COUNT(b.user_id) = 0
