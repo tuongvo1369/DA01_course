@@ -50,29 +50,53 @@ GROUP BY c.name
 ORDER BY COUNT(DISTINCT a.title) DESC
 
 /*5--Đưa ra cái nhìn tổng quan về họ và tên của các diễn viên cũng như số lượng phim họ tham gia.
-Question: Diễn viên nào đóng nhiều phim nhất?-->> GINA, 42 films */
+Question: Diễn viên nào đóng nhiều phim nhất?-->> SUSAN DAVIS, 54 films */
 
 SELECT
-a.actor_id,
 a.first_name,
 a.last_name,
-COUNT(b.film_id) AS film_counts
+COUNT(DISTINCT b.film_id) AS film_counts
 FROM actor AS a
-LEFT JOIN film_actor AS b
+LEFT JOIN film_actor AS b	
 ON a.actor_id = b.actor_id
-GROUP BY a.actor_id
-ORDER BY COUNT(b.film_id) DESC
+GROUP BY a.first_name,a.last_name
+ORDER BY COUNT(DISTINCT b.film_id) DESC
 
 /*6--Tìm các địa chỉ không liên quan đến bất kỳ khách hàng nào.
-Question: Có bao nhiêu địa chỉ như vậy?-->>  */
+Question: Có bao nhiêu địa chỉ như vậy?-->> 4 address with no customer matched */
 
+SELECT
+address_id
+FROM address
+EXCEPT
+(SELECT address_id
+FROM customer)
 
 /*7--Danh sách các thành phố và doanh thu tương ừng trên từng thành phố 
-Question:Thành phố nào đạt doanh thu cao nhất?-->>  */
+Question:Thành phố nào đạt doanh thu cao nhất?-->> Cape Coral	221.55  */
 
+SELECT
+d.city,
+SUM(a.amount) AS total_revenue
+FROM payment AS a
+LEFT JOIN customer AS b ON a.customer_id= b.customer_id 
+LEFT JOIN address AS c ON b.address_id=c.address_id
+LEFT JOIN city AS d ON c.city_id=d.city_id
+GROUP BY d.city
+ORDER BY SUM(a.amount) desc
 
 /*8--Tạo danh sách trả ra 2 cột dữ liệu: 
 -	cột 1: thông tin thành phố và đất nước ( format: “city, country")
 -	cột 2: doanh thu tương ứng với cột 1
-Question: thành phố của đất nước nào đat doanh thu cao nhất-->>   */
+Question: thành phố của đất nước nào đat doanh thu cao nhất-->>  Cape Coral - United States 221.55 */
 
+SELECT
+CONCAT(e.country,', ', d.city ) as location,
+SUM(a.amount) AS total_revenue
+FROM payment AS a
+LEFT JOIN customer AS b ON a.customer_id= b.customer_id 
+LEFT JOIN address AS c ON b.address_id=c.address_id
+LEFT JOIN city AS d ON c.city_id=d.city_id
+LEFT JOIN country AS e ON d.country_id = e.country_id
+GROUP BY location
+ORDER BY SUM(a.amount) desc
