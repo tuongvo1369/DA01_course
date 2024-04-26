@@ -1,0 +1,86 @@
+/*1--Assume you're given a table containing job postings from various companies on the LinkedIn platform. Write a query to retrieve the count of companies that have posted duplicate job listings.
+Definition: Duplicate job listings are defined as two job listings within the same company that share identical titles and descriptions ->> 3 company dup*/
+WITH job_post AS (
+  SELECT
+    company_id,
+    title,
+    description,
+    COUNT(job_id) AS job_count
+  FROM job_listings
+  GROUP BY company_id,title,description
+  HAVING COUNT(job_id)>1)
+SELECT
+COUNT(*) AS dup_case
+FROM job_post 
+/*2--Assume you're given a table containing data on Amazon customers and their spending on products in different category, write a query to identify the top two highest-grossing products within each category in the year 2022. The output should include the category, product, and total spend*/
+WITH product_spend_2022 AS (
+  SELECT
+    category,
+    product,
+    SUM(spend) AS total_spend,
+    RANK() OVER (
+      PARTITION BY category 
+      ORDER BY SUM(spend) DESC) AS ranking 
+  FROM product_spend
+  WHERE EXTRACT(year FROM transaction_date)= 2022
+  GROUP BY category, product)
+
+SELECT
+  category,
+  product,
+  total_spend
+FROM product_spend_2022
+WHERE ranking <=2
+ORDER BY category, ranking
+
+/*3--UnitedHealth Group (UHG) has a program called Advocate4Me, which allows policy holders (or, members) to call an advocate and receive support for their health care needs – whether that's claims and benefits support, drug coverage, pre- and post-authorisation, medical records, emergency assistance, or member portal services.
+Write a query to find how many UHG policy holders made three, or more calls, assuming each call is identified by the case_id column. ->> 38 holders*/
+
+SELECT
+  policy_holder_id,
+  COUNT (case_id) AS call_count
+FROM callers
+GROUP BY policy_holder_id)
+
+SELECT
+count(DISTINCT policy_holder_id )
+FROM case_review
+WHERE call_count>=3
+
+/*4--Assume you're given two tables containing data about Facebook Pages and their respective likes (as in "Like a Facebook Page").
+Write a query to return the IDs of the Facebook pages that have zero likes. The output should be sorted in ascending order based on the page IDs.--> 2 IDs*/
+
+SELECT page_id
+FROM pages
+WHERE page_id NOT IN (
+  SELECT page_id 
+  FROM page_likes
+  WHERE page_id IS NOT NULL)
+
+/*5--Assume you're given a table containing information on Facebook user actions. Write a query to obtain number of monthly active users (MAUs) in July 2022, including the month in numerical format "1, 2, 3".*/
+SELECT 
+  EXTRACT (month FROM curr.event_date) as month,
+  COUNT(DISTINCT curr.user_id) as mau
+FROM user_actions as curr
+WHERE 
+  EXTRACT (YEAR FROM curr.event_date) = 2022
+  AND EXTRACT (MONTH FROM curr.event_date) = 7
+  AND EXISTS (
+    SELECT last.user_id
+    FROM user_actions as last
+    WHERE
+      last.user_id = curr.user_id
+      AND EXTRACT (YEAR FROM last.event_date) = 2022
+      AND EXTRACT (MONTH FROM last.event_date) = EXTRACT (MONTH FROM curr.event_date)- 1)
+GROUP BY EXTRACT (month FROM curr.event_date)
+
+/*6--Write an SQL query to find for each month and country, the number of transactions and their total amount, the number of approved transactions and their total amount.
+Return the result table in any order.*/
+
+
+/*7--*/
+/*8--*/
+/*9--*/
+/*10--*/
+/*11--*/
+/*12--*/
