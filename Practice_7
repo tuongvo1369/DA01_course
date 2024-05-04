@@ -1,4 +1,73 @@
-/*4--Given a table of tweet data over a specified time period, calculate the 3-day rolling average of tweets for each user. Output the user ID, tweet date, and rolling averages rounded to 2 decimal places.
+/*1--Assume you're given a table containing information about Wayfair user transactions for different products. Write a query to calculate the year-on-year growth rate for the total spend of each product, grouping the results by product ID.
+The output should include the year in ascending order, product ID, current year's spend, previous year's spend and year-on-year growth percentage, rounded to 2 decimal places.
+*/
+WITH product_tnx AS(
+  SELECT
+    EXTRACT(YEAR FROM transaction_date) AS year,
+    product_id,
+    SUM(spend) AS curr_year_spend
+  FROM user_transactions
+  GROUP BY product_id, year)
+
+SELECT *,
+  LAG(curr_year_spend) OVER (PARTITION BY product_id ORDER BY year) as previous_year_spend,
+  ROUND(100*(curr_year_spend/(LAG(curr_year_spend) OVER (PARTITION BY product_id ORDER BY year)) -1) ,2) AS growth_pct
+FROM product_tnx
+ORDER BY product_id,year
+
+/*2--Your team at JPMorgan Chase is soon launching a new credit card. You are asked to estimate how many cards you'll issue in the first month.
+Before you can answer this question, you want to first get some perspective on how well new credit card launches typically do in their first month.
+Write a query that outputs the name of the credit card, and how many cards were issued in its launch month. The launch month is the earliest record in the monthly_cards_issued table for a given card. Order the results starting from the biggest issued amount.
+*/
+WITH sub AS (
+SELECT
+  card_name,
+  CONCAT(issue_year,'/',issue_month) as issue_date,
+  MIN(CONCAT(issue_year,'/',issue_month))
+    OVER(PARTITION BY card_name) AS launch_date,
+  issued_amount
+FROM monthly_cards_issued)
+
+SELECT 
+  card_name,
+  issued_amount
+FROM sub
+WHERE issue_date = launch_date
+ORDER BY issued_amount DESC
+
+/*3--Assume you are given the table below on Uber transactions made by users. Write a query to obtain the third transaction of every user. Output the user id, spend and transaction date.
+*/
+WITH sub AS (
+  SELECT *,
+  ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY transaction_date DESC) AS row_num
+  FROM transactions)
+
+SELECT
+  user_id,
+  spend,
+  transaction_date
+FROM sub
+WHERE row_num =3
+
+/*4--Assume you're given a table on Walmart user transactions. Based on their most recent transaction date, write a query that retrieve the users along with the number of products they bought.
+Output the user's most recent transaction date, user ID, and the number of products, sorted in chronological order by the transaction date.
+*/
+WITH sub AS (
+SELECT
+  user_id, product_id, transaction_date,
+  RANK() OVER (PARTITION BY user_id ORDER BY transaction_date) AS recency_rank
+FROM user_transactions)
+
+SELECT 
+  user_id,
+  transaction_date,
+  COUNT(DISTINCT product_id) AS product_count
+FROM sub
+WHERE recency_rank = 1
+GROUP BY user_id, transaction_date
+ORDER BY transaction_date
+
+/*5--Given a table of tweet data over a specified time period, calculate the 3-day rolling average of tweets for each user. Output the user ID, tweet date, and rolling averages rounded to 2 decimal places.
 Notes:
 A rolling average, also known as a moving average or running mean is a time-series technique that examines trends in data over a specified period of time.
 In this case, we want to determine how the tweet count for each user changes over a 3-day period.
