@@ -22,3 +22,28 @@ ALTER COLUMN territory TYPE TEXT USING territory::TEXT,
 ALTER COLUMN contactfullname TYPE TEXT USING contactfullname::TEXT,
 ALTER COLUMN dealsize TYPE TEXT USING dealsize::TEXT;
 2/
+SELECT *
+FROM public.sales_dataset_rfm_prj
+WHERE COALESCE(ordernumber, 0) = 0
+   OR COALESCE(quantityordered, 0) = 0
+   OR COALESCE(priceeach, 0) = 0
+   OR COALESCE(orderlinenumber, 0) = 0
+   OR COALESCE(sales, 0) = 0
+
+--3/Thêm cột CONTACTLASTNAME, CONTACTFIRSTNAME được tách ra từ CONTACTFULLNAME . 
+Chuẩn hóa CONTACTLASTNAME, CONTACTFIRSTNAME theo định dạng chữ cái đầu tiên viết hoa, chữ cái tiếp theo viết thường. 
+
+SELECT
+    LEFT(contactfullname, POSITION('-' IN contactfullname) - 1) AS CONTACTFIRSTNAME,
+    RIGHT(contactfullname, LENGTH(contactfullname) - POSITION('-' IN contactfullname)) AS CONTACTLASTNAME
+FROM public.sales_dataset_rfm_prj
+
+--4/Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy, tháng, năm được lấy ra từ ORDERDATE
+
+SELECT 
+	CEILING(EXTRACT(MONTH FROM ORDERDATE)/3) AS QTR_ID,
+	EXTRACT(MONTH FROM ORDERDATE) AS MONTH_ID,
+	EXTRACT(YEAR FROM ORDERDATE) AS YEAR_ID
+FROM public.sales_dataset_rfm_prj
+
+5/Hãy tìm outlier (nếu có) cho cột QUANTITYORDERED và hãy chọn cách xử lý cho bản ghi đó (2 cách) ( Không chạy câu lệnh trước khi bài được review)
