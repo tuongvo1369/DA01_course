@@ -1,1 +1,24 @@
-
+1/
+ALTER TABLE public.sales_dataset_rfm_prj
+ALTER COLUMN ordernumber TYPE INTEGER USING ordernumber::INTEGER,
+ALTER COLUMN quantityordered TYPE SMALLINT USING quantityordered::SMALLINT,
+ALTER COLUMN priceeach TYPE FLOAT USING priceeach::FLOAT,
+ALTER COLUMN orderlinenumber TYPE SMALLINT USING orderlinenumber::SMALLINT,
+ALTER COLUMN sales TYPE FLOAT USING sales::FLOAT,
+ALTER COLUMN orderdate TYPE TIMESTAMP USING  to_timestamp(orderdate, 'MM-DD-YYYY HH24:MI'),
+ALTER COLUMN status TYPE TEXT USING status::TEXT,
+ALTER COLUMN productline TYPE TEXT USING productline::TEXT,
+ALTER COLUMN msrp TYPE SMALLINT USING msrp::SMALLINT,
+ALTER COLUMN productcode TYPE TEXT USING productcode::TEXT,
+ALTER COLUMN customername TYPE TEXT USING customername::TEXT,
+ALTER COLUMN phone TYPE TEXT USING phone::TEXT,
+ALTER COLUMN addressline1 TYPE TEXT USING addressline1::TEXT,
+ALTER COLUMN addressline2 TYPE TEXT USING addressline2::TEXT,
+ALTER COLUMN city TYPE TEXT USING city::TEXT,
+ALTER COLUMN state TYPE TEXT USING state::TEXT,
+ALTER COLUMN postalcode TYPE TEXT USING postalcode::TEXT,
+ALTER COLUMN country TYPE TEXT USING country::TEXT,
+ALTER COLUMN territory TYPE TEXT USING territory::TEXT,
+ALTER COLUMN contactfullname TYPE TEXT USING contactfullname::TEXT,
+ALTER COLUMN dealsize TYPE TEXT USING dealsize::TEXT;
+2/
