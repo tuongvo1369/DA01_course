@@ -34,13 +34,19 @@ WHERE COALESCE(ordernumber, 0) = 0
 Chuẩn hóa CONTACTLASTNAME, CONTACTFIRSTNAME theo định dạng chữ cái đầu tiên viết hoa, chữ cái tiếp theo viết thường. 
 
 SELECT
-    LEFT(contactfullname, POSITION('-' IN contactfullname) - 1) AS CONTACTFIRSTNAME,
-    RIGHT(contactfullname, LENGTH(contactfullname) - POSITION('-' IN contactfullname)) AS CONTACTLASTNAME
+    CONCAT(
+		UPPER(LEFT(SPLIT_PART(contactfullname,'-', 1),1)),
+		LOWER(RIGHT(SPLIT_PART(contactfullname,'-', 1),LENGTH(SPLIT_PART(contactfullname,'-', 1))-1))
+	) AS CONTACTFIRSTNAME,
+    CONCAT(
+		UPPER(LEFT(SPLIT_PART(contactfullname,'-', 2),1)),
+		LOWER(RIGHT(SPLIT_PART(contactfullname,'-', 2),LENGTH(SPLIT_PART(contactfullname,'-', 2))-1))
+	) AS CONTACTLASTNAME,
 FROM public.sales_dataset_rfm_prj
 
 --4/Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy, tháng, năm được lấy ra từ ORDERDATE
 
-SELECT 
+SELECT
 	CEILING(EXTRACT(MONTH FROM ORDERDATE)/3) AS QTR_ID,
 	EXTRACT(MONTH FROM ORDERDATE) AS MONTH_ID,
 	EXTRACT(YEAR FROM ORDERDATE) AS YEAR_ID
