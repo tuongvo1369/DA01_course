@@ -33,23 +33,55 @@ WHERE COALESCE(ordernumber, 0) = 0
 --3/Thêm cột CONTACTLASTNAME, CONTACTFIRSTNAME được tách ra từ CONTACTFULLNAME . 
 Chuẩn hóa CONTACTLASTNAME, CONTACTFIRSTNAME theo định dạng chữ cái đầu tiên viết hoa, chữ cái tiếp theo viết thường. 
 
-SELECT
-    CONCAT(
+ALTER TABLE public.sales_dataset_rfm_prj
+ADD COLUMN CONTACTFIRSTNAME TEXT
+ADD COLUMN CONTACTLASTNAME TEXT
+UPDATE public.sales_dataset_rfm_prj
+SET CONTACTFIRSTNAME = CONCAT(
 		UPPER(LEFT(SPLIT_PART(contactfullname,'-', 1),1)),
 		LOWER(RIGHT(SPLIT_PART(contactfullname,'-', 1),LENGTH(SPLIT_PART(contactfullname,'-', 1))-1))
-	) AS CONTACTFIRSTNAME,
-    CONCAT(
+	)
+SET CONTACTLASTNAME = CONCAT(
 		UPPER(LEFT(SPLIT_PART(contactfullname,'-', 2),1)),
 		LOWER(RIGHT(SPLIT_PART(contactfullname,'-', 2),LENGTH(SPLIT_PART(contactfullname,'-', 2))-1))
-	) AS CONTACTLASTNAME,
-FROM public.sales_dataset_rfm_prj
+	)
 
 --4/Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy, tháng, năm được lấy ra từ ORDERDATE
 
-SELECT
-	CEILING(EXTRACT(MONTH FROM ORDERDATE)/3) AS QTR_ID,
-	EXTRACT(MONTH FROM ORDERDATE) AS MONTH_ID,
-	EXTRACT(YEAR FROM ORDERDATE) AS YEAR_ID
-FROM public.sales_dataset_rfm_prj
+ALTER TABLE public.sales_dataset_rfm_prj
+ADD COLUMN QTR_ID SMALLINT,
+ADD COLUMN MONTH_ID SMALLINT,
+ADD COLUMN YEAR_ID SMALLINT;
+
+UPDATE public.sales_dataset_rfm_prj
+SET 
+	QTR_ID = CEILING(EXTRACT(MONTH FROM ORDERDATE)/3),
+	MONTH_ID = EXTRACT(MONTH FROM ORDERDATE),
+	YEAR_ID = EXTRACT(YEAR FROM ORDERDATE)
 
 5/Hãy tìm outlier (nếu có) cho cột QUANTITYORDERED và hãy chọn cách xử lý cho bản ghi đó (2 cách) ( Không chạy câu lệnh trước khi bài được review)
+WITH quartile AS(
+WITH qty_dist AS (
+		SELECT QUANTITYORDERED,
+		ROW_NUMBER () OVER(ORDER BY QUANTITYORDERED) as stt
+		FROM public.sales_dataset_rfm_prj),
+	
+	total_base AS (
+		SELECT COUNT(*) as base_size
+		FROM public.sales_dataset_rfm_prj)
+			
+SELECT 
+	(SELECT QUANTITYORDERED
+	 FROM qty_dist
+	 WHERE stt = CEILING(0.25 * (SELECT base_size FROM total_base))
+	) AS Q1,
+	
+	(SELECT QUANTITYORDERED
+	 FROM qty_dist
+	 WHERE stt = CEILING(0.75 * (SELECT base_size FROM total_base))
+	) AS Q3
+FROM total_base)
+
+SELECT QUANTITYORDERED
+FROM qty_dist
+WHERE stt < Q1 - 1.5 * (Q3 - Q1) OR stt > Q3 + 1.5 * (Q3 - 1)
