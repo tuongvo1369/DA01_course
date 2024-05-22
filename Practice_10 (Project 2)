@@ -1,1 +1,26 @@
+--1. Monthly Active Buyers & Orders? Trending?
+SELECT
+  CONCAT(EXTRACT(YEAR FROM created_at),'-',FORMAT_DATE("%m",created_at)) as order_month,
+  COUNT(DISTINCT order_id) as order_count,
+  COUNT(DISTINCT user_id) as buyer_count
+FROM bigquery-public-data.thelook_ecommerce.orders
+WHERE status = 'Complete'
+GROUP BY order_month
+ORDER BY order_month
+
+--2. AOV & Monthly Active Buyers? Trending?
+SELECT
+  order_month,
+  COUNT(DISTINCT user_id) as MAU,
+  ROUND(AVG (user_aov),2) as monthly_aov
+FROM (
+  SELECT
+    CONCAT(EXTRACT(YEAR FROM created_at),'-',FORMAT_DATE("%m",created_at)) as order_month,
+    user_id,
+    SUM(sale_price)/COUNT (DISTINCT order_id) as user_aov,
+  FROM bigquery-public-data.thelook_ecommerce.order_items
+  GROUP BY order_month, user_id
+) AS monthly_aov
+GROUP BY order_month
+ORDER BY order_month
 
