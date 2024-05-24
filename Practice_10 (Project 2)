@@ -24,3 +24,52 @@ FROM (
 GROUP BY order_month
 ORDER BY order_month
 
+--3. Buyers by Age: Youngest? Oldest?
+
+WITH age_filter as (
+  SELECT
+    id, first_name, last_name, gender, age,
+    DENSE_RANK() OVER (PARTITION BY gender ORDER BY age ASC) as young_to_old,
+    DENSE_RANK() OVER (PARTITION BY gender ORDER BY age DESC) as old_to_young,
+  FROM bigquery-public-data.thelook_ecommerce.users
+  ORDER BY gender,young_to_old
+)
+, age_group as (
+  SELECT 
+    id, first_name, last_name, gender, age,
+    (CASE WHEN young_to_old =1 THEN "youngest" ELSE "oldest" END) as tag
+  FROM age_filter
+  WHERE young_to_old = 1 OR old_to_young =1
+)
+SELECT 
+  gender, age,
+  COUNT(DISTINCT id) as user_count
+FROM age_group
+GROUP BY gender, age
+
+--4. Top SKUs
+WITH top_monthly_items AS
+  (SELECT 
+  *,
+  DENSE_RANK() OVER (PARTITION BY order_month ORDER BY profit DESC) as profit_rank
+  FROM (
+    SELECT
+      CONCAT(EXTRACT(YEAR FROM o.created_at),'-',FORMAT_DATE("%m",o.created_at)) as order_month,
+      o.product_id,
+      p.name,
+      SUM(p.retail_price) as rev,
+      SUM(p.cost) as cost,
+      SUM(p.retail_price) - SUM(p.cost) as profit
+    FROM bigquery-public-data.thelook_ecommerce.order_items as o
+    INNER JOIN bigquery-public-data.thelook_ecommerce.products as p
+    ON o.product_id = p.id
+    GROUP BY order_month,o.product_id,p.name
+    )
+  )
+SELECT *
+FROM top_monthly_items
+WHERE profit_rank <=5
+ORDER BY order_month ASC, profit DESC
+
+--5. MTD Sale
+
