@@ -88,3 +88,25 @@ FROM(
   WHERE o.status <> 'Cancelled')
 WHERE PARSE_DATE('%Y-%m-%d', order_date) <= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
 ORDER BY  category,order_date
+
+--6. Build Dashboard 
+WITH CTE as (SELECT
+  EXTRACT(MONTH FROM o.created_at) as month,
+  EXTRACT(YEAR FROM o.created_at) as year,
+  p.category,
+  SUM (i.sale_price) as tpv,
+  COUNT(i.order_id) as tpo,
+  SUM(p.cost) as total_cost,
+  SUM(p.retail_price)- SUM(p.cost) AS total_profit,
+  (SUM(p.retail_price)- SUM(p.cost))/SUM(p.cost) as profit_to_cost_ratio
+FROM bigquery-public-data.thelook_ecommerce.orders as o
+JOIN bigquery-public-data.thelook_ecommerce.order_items as i ON o.order_id =i.order_id
+JOIN bigquery-public-data.thelook_ecommerce. products as p ON p.id= i.product_id
+GROUP BY month,year,category
+ORDER BY category,year,month)
+
+SELECT *,
+  ROUND(100*(total_cost/LAG(total_cost) OVER (PARTITION BY category ORDER BY year,month) -1),1) ||"%" as cost_growth,
+  ROUND(100*(total_profit/LAG(total_profit) OVER (PARTITION BY category ORDER BY year,month) -1),1) ||"%" as profit_growth
+FROM CTE
+ORDER BY category,year,month
