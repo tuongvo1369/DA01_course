@@ -1,1 +1,44 @@
+--1. Revenue by productline,year_id,dealsize
+SELECT
+	productline,year_id,dealsize,
+	sum(sales) as revenue
+FROM public.sales_dataset_rfm_prj
+GROUP BY productline,year_id,dealsize
 
+--2. Months with highest orders in each year
+SELECT
+	month_id,
+	sum(sales) as revenue,
+	count(ordernumber) as order_no
+FROM public.sales_dataset_rfm_prj
+GROUP BY month_id
+
+--3. Best-selling Productline in November
+SELECT
+	productline,
+	sum(sales) as revenue,
+	count(ordernumber) as order_no
+FROM public.sales_dataset_rfm_prj
+WHERE mon_id = 11
+GROUP BY productline
+ORDER BY sum(sales) DESC
+
+--4. Product with best revenue each year in UK
+SELECT *
+FROM ( 
+	SELECT *,
+		DENSE_RANK() OVER (PARTITION BY year_id ORDER BY revenue) as rev_rank
+	FROM(
+		SELECT
+			year_id,
+			productline,
+			sum(sales) as revenue
+		FROM public.sales_dataset_rfm_prj
+		WHERE country ='UK'
+		GROUP BY year_id, productline, country
+		)
+	ORDER BY RANK () OVER (PARTITION BY year_id, productline ORDER BY revenue)
+		)
+WHERE rev_rank =1
+
+--5. Best customer segment based on RFM
