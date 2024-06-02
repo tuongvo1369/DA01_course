@@ -40,5 +40,3 @@ FROM (
 	ORDER BY RANK () OVER (PARTITION BY year_id, productline ORDER BY revenue)
 		)
 WHERE rev_rank =1
-
---5. Best customer segment based on RFM
